@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/morpha-stemmer-1.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/twitter4j-core-3.0.3.jar" sourcepath="/Users/indri/.m2/repository/org/twitter4j/twitter4j-core/3.0.3/twitter4j-core-3.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="lib/berkeleyparser-r32.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.8.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/trove4j-3.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/langdetect-1.1-20120112.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queries-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/opennlp-tools-1.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/jaws-bin.jar"/>
+	<classpathentry kind="lib" path="lib/jollyday-0.4.7.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-3.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-3.3.1-models.jar"/>
+	<classpathentry kind="lib" path="lib/anna-3.3.jar"/>
+	<classpathentry kind="lib" path="lib/minorthird_20080611.jar"/>
+	<classpathentry kind="lib" path="lib/FDAGeoParser.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
