@@ -1,19 +1,3 @@
-/*Copyright 2014, Language Technologies Institute, Carnegie Mellon
-University
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-
-    You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-implied. See the License for the specific language governing
-permissions and limitations under the License.
- @author Wei Zhang
-*/
 package edu.cmu.geolocator.parser.Universal;
 
 import java.io.BufferedReader;
@@ -33,6 +17,7 @@ import edu.cmu.minorthird.classify.ClassLabel;
 import edu.cmu.minorthird.classify.Example;
 import edu.cmu.minorthird.classify.Feature;
 import edu.cmu.minorthird.classify.MutableInstance;
+import edu.cmu.minorthird.classify.sequential.CMM;
 import edu.cmu.minorthird.classify.sequential.SequenceClassifier;
 import edu.cmu.minorthird.util.IOUtil;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -42,7 +27,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class ACE_MTNERParser {
 
-	SequenceClassifier model;
+	CMM model = null;
 
 	ACE_En_FeatureGenerator fg;
 
@@ -59,7 +44,9 @@ public class ACE_MTNERParser {
 
 		if (fineenglishparser == null) {
 			try {
-				fineenglishparser = new ACE_MTNERParser("ACE-CRF.model120", new ACE_En_FeatureGenerator("res/"));
+				fineenglishparser = new ACE_MTNERParser(
+						"20141115ACE-CRF.model120",
+						new ACE_En_FeatureGenerator("res/"));
 			} catch (Exception e) {
 				System.err.println("Spanish NER Model File not found");
 				e.printStackTrace();
@@ -70,7 +57,7 @@ public class ACE_MTNERParser {
 
 	ACE_MTNERParser(String modelname, ACE_En_FeatureGenerator featureg) {
 		try {
-			model = (SequenceClassifier) IOUtil.loadSerialized(new java.io.File(modelname));
+			model = (CMM) IOUtil.loadSerialized(new java.io.File(modelname));
 			this.fg = featureg;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -84,17 +71,21 @@ public class ACE_MTNERParser {
 
 	/**
 	 * extract the entities, and put them into the tweet. return them also.
+	 * 
+	 * @throws IOException
 	 */
-	public List<LocEntityAnnotation> parse(Tweet tweet) {
+	public List<LocEntityAnnotation> parse(Tweet tweet) throws IOException {
 		tweetSentence = tweet.getSentence();
 		// ///////////////////
-		PipeLineAnnotate pla = new PipeLineAnnotate(tweetSentence.getSentenceString());
+		PipeLineAnnotate pla = new PipeLineAnnotate(
+				tweetSentence.getSentenceString());
 		List<CoreMap> NLPsents = pla.getSentences();
 
 		ArrayList<Sentence> sentences = new ArrayList<Sentence>();
 		for (CoreMap NLPsentence : NLPsents) {
 
-			Sentence mysentence = new Sentence(NLPsentence.get(TextAnnotation.class));
+			Sentence mysentence = new Sentence(
+					NLPsentence.get(TextAnnotation.class));
 
 			List<CoreLabel> tokens = NLPsentence.get(TokensAnnotation.class);
 
@@ -120,7 +111,7 @@ public class ACE_MTNERParser {
 		}
 
 		// ////////////////////
-		
+
 		List<LocEntityAnnotation> locs = new ArrayList<LocEntityAnnotation>();
 
 		int sentid = 0;
@@ -128,8 +119,11 @@ public class ACE_MTNERParser {
 			Example[] exp = new Example[sent.getTokens().length];
 			List<ArrayList<Feature>> tweetfeatures = fg.extractFeature(sent);
 			for (int tokid = 0; tokid < sent.getTokens().length; tokid++) {
-				ClassLabel lab = new ClassLabel(sent.getTokens()[tokid].getNE() == null ? "" : sent.getTokens()[tokid].getNE());
-				MutableInstance inst = new MutableInstance("ACE-NER", sentid + "-" + tokid);
+				ClassLabel lab = new ClassLabel(
+						sent.getTokens()[tokid].getNE() == null ? ""
+								: sent.getTokens()[tokid].getNE());
+				MutableInstance inst = new MutableInstance("ACE-NER", sentid
+						+ "-" + tokid);
 				for (int j = 0; j < tweetfeatures.get(0).size(); j++) {
 					inst.addBinary(tweetfeatures.get(tokid).get(j));
 				}
@@ -137,10 +131,12 @@ public class ACE_MTNERParser {
 			}
 			ClassLabel[] resultlabels = model.classification(exp);
 			for (int tokid = 0; tokid < sent.getTokens().length; tokid++) {
-				sent.getTokens()[tokid].setNEprediction(resultlabels[tokid].bestClassName());
-				//System.out.println(resultlabels[tokid].bestClassName() + " "+sent.getTokens()[tokid].getToken());
+				sent.getTokens()[tokid].setNEprediction(resultlabels[tokid]
+						.bestClassName());
+				// System.out.println(resultlabels[tokid].bestClassName() +
+				// " "+sent.getTokens()[tokid].getToken());
 			}
-			
+
 			/**
 			 * rewrite the loc-entity generation, to support positions.
 			 */
@@ -159,9 +155,11 @@ public class ACE_MTNERParser {
 						// previous);
 						Token[] t = new Token[endpos - startpos + 1];
 						for (int i = startpos; i <= endpos; i++) {
-							t[i - startpos] = sent.getTokens()[i].setNE(previous);
+							t[i - startpos] = sent.getTokens()[i]
+									.setNE(previous);
 						}
-						LocEntityAnnotation le = new LocEntityAnnotation(startpos, endpos, previous, t);
+						LocEntityAnnotation le = new LocEntityAnnotation(
+								startpos, endpos, previous, t);
 
 						// set the probability of the NE type
 						// This may be changed later.
@@ -175,8 +173,7 @@ public class ACE_MTNERParser {
 					endpos = k;
 
 			}
-			
-			
+
 			sentid++;
 		}
 		// ///////////////////
@@ -187,7 +184,8 @@ public class ACE_MTNERParser {
 
 		String sss = "I live in Pittsburgh. I am going to new york.";
 		Tweet t = new Tweet(sss);
-		BufferedReader s = new BufferedReader(new InputStreamReader(System.in, "utf-8"));
+		BufferedReader s = new BufferedReader(new InputStreamReader(System.in,
+				"utf-8"));
 		System.out.println(">");
 		while (true) {
 			String ss = s.readLine();
@@ -195,7 +193,7 @@ public class ACE_MTNERParser {
 				continue;
 			t.setSentence(ss);
 			double stime = System.currentTimeMillis();
-			List<LocEntityAnnotation> matches = ParserFactory.getACENERParser().parse(t);
+			List<LocEntityAnnotation> matches = ParserFactory.getEnAggrParser().parse(t);
 			if (matches == null)
 				System.out.println("No results. ");
 			double etime = System.currentTimeMillis();

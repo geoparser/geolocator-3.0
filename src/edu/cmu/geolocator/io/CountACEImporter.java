@@ -1,25 +1,12 @@
-/*Copyright 2014, Language Technologies Institute, Carnegie Mellon
-University
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-
-    You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-implied. See the License for the specific language governing
-permissions and limitations under the License.
- @author Xu Chen, Wei Zhang
-*/
 package edu.cmu.geolocator.io;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,25 +55,79 @@ public class CountACEImporter {
 
 	public static void main(String argb[]) throws IOException {
 		CountACEImporter importer = new CountACEImporter(
-				"E:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\Chinese\\bn\\ChineseTestDataset");
+				"C:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\train");
 		int goldToponym = 0;
+		int facToponym = 0;
 		for (Entry<String, TagDocument> e : importer.tagDoc.entrySet()) {
 			if (e.getKey() == null)
 				continue;
 			ArrayList<ACE_NETag> a = e.getValue().getTags();
+			String FacFilename = null;
+			
 			for (ACE_NETag tag : a){
 				
-				if (tag.getCoarseNEType().equals("TYPE=\"GPE\"")||tag.getCoarseNEType().equals("TYPE=\"LOC\"")){
-					System.out.println(tag.getPhrase() + tag.getCoarseNEType());
+				if (tag.getCoarseNEType().equals("TYPE=\"GPE\"")||tag.getCoarseNEType().equals("TYPE=\"LOC\"")||tag.getCoarseNEType().equals("TYPE=\"FAC\"")){
+					//System.out.println(tag.getPhrase() + " "+tag.getCoarseNEType());
 					goldToponym++;
 				}
+				
+				if (tag.getCoarseNEType().equals("TYPE=\"FAC\"")){
+					//System.out.println(tag.getPhrase() + " "+tag.getCoarseNEType());
+					FacFilename = e.getKey();
+					facToponym++;
+				}
 			}
+			if (FacFilename!=null)			
+			FacFilename = FacFilename+".apf"+".xml";
+			   //System.out.println(FacFilename);
+
+			  String path = "C:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\train";//文件夹的路径
+			  File file = new File(path);
+			  String[] files = file.list();
+			  for(String f :files){
+			   if (FacFilename != null && FacFilename.length()!=0&&f.equals(FacFilename)){
+				   System.out.println(FacFilename);
+				   CountACEImporter.copyFile(path+"\\"+FacFilename, "C:\\chenxu\\cmu\\IEEE paper data\\ACEFAC"+"\\"+FacFilename);
+			   
+			   }
+			  }
+			//File FacFile = new File(FacFilename);
+			
+
 
 		}
-		System.out.print(goldToponym);
+		//System.out.print(goldToponym);
+		//System.out.print(facToponym);
+
 
 	}
 
+	   public static void copyFile(String oldPath, String newPath) { 
+	       try { 
+	           int bytesum = 0; 
+	           int byteread = 0; 
+	           File oldfile = new File(oldPath); 
+	           if (oldfile.exists()) { //文件存在时 
+	               InputStream inStream = new FileInputStream(oldPath); //读入原文件 
+	               FileOutputStream fs = new FileOutputStream(newPath); 
+	               byte[] buffer = new byte[1444]; 
+	               int length; 
+	               while ( (byteread = inStream.read(buffer)) != -1) { 
+	                   bytesum += byteread; //字节数 文件大小 
+	                   //System.out.println(bytesum); 
+	                   fs.write(buffer, 0, byteread); 
+	               } 
+	               inStream.close(); 
+	           } 
+	       } 
+	       catch (Exception e) { 
+	           System.out.println("复制单个文件操作出错"); 
+	           e.printStackTrace(); 
+
+	       } 
+
+	   } 
+	
 	void importDocs(File node) throws IOException {
 
 		if (node.isDirectory()) {

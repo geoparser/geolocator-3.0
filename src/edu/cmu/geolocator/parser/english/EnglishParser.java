@@ -27,6 +27,7 @@ under the License.
 
 package edu.cmu.geolocator.parser.english;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +60,9 @@ public class EnglishParser {
   private TPParser tp;
 
   private FDAGeoParser fda;
+  
+  private FreebaseSearch Fsearch;
+
 
   public EnglishParser(boolean misspell) {
 	ace = ParserFactory.getACENERParser();
@@ -66,10 +70,12 @@ public class EnglishParser {
     finener = ParserFactory.getFineEnNERParser();
     stbd = ParserFactory.getEnSTBDParser();
     tp = ParserFactory.getEnToponymParser();
+    Fsearch = new FreebaseSearch();
+
     //fda = ParserFactory.getEnFDAGeoParser();
   }
 
-  public List<LocEntityAnnotation> parse(Tweet t) {
+  public List<LocEntityAnnotation> parse(Tweet t) throws IOException {
     ArrayList<LocEntityAnnotation> match = new ArrayList<LocEntityAnnotation>();
     long start = System.currentTimeMillis();
     /*List<LocEntityAnnotation> nerresult = ner.parse(t);
@@ -77,23 +83,25 @@ public class EnglishParser {
     /*System.out.println("NER parser parse time: " + (end - start));
     System.out.println("NER result is: " + nerresult);
     start = end;*/
-    List<LocEntityAnnotation> stbdresult = stbd.parse(t);
+/*    List<LocEntityAnnotation> stbdresult = stbd.parse(t);
     long end = System.currentTimeMillis();
     System.out.println("stbd parser time: " + (end - start));
     System.out.println("stbd result is: " + stbdresult);
-    start = end;
+    start = end;*/
     
     List<LocEntityAnnotation> acedresult = ace.parse(t);
-    end = System.currentTimeMillis();
+    long end = System.currentTimeMillis();
     System.out.println("ace parser time: " + (end - start));
-    System.out.println("ace result is: " + stbdresult);
+    System.out.println("ace result is: " + acedresult);
     start = end;
     
-    List<LocEntityAnnotation> toporesult = tp.parse(t);
-    end = System.currentTimeMillis();
-    System.out.println("toponym parser time: " + (end - start));
-    System.out.println("topo result is: " + toporesult);
-    start = end;
+ //   List<LocEntityAnnotation> toporesult = tp.parse(t);
+    
+   // toporesult = Fsearch.queryTypes(toporesult);
+   // end = System.currentTimeMillis();
+    //System.out.println("toponym parser time: " + (end - start));
+   // System.out.println("topo result is: " + toporesult);
+   // start = end;
     /*List<LocEntityAnnotation> finenerresult = finener.parse(t);
     end = System.currentTimeMillis();
     System.out.println("fine-ner parser time: " + (end - start));
@@ -131,8 +139,8 @@ public class EnglishParser {
 
     //match.addAll(nerresult);
     match.addAll(acedresult);
-    match.addAll(stbdresult);
-    match.addAll(toporesult);
+    //match.addAll(stbdresult);
+    //match.addAll(toporesult);
     //match.addAll(finenerresult);
     //match.addAll(fdaAdapt);
 

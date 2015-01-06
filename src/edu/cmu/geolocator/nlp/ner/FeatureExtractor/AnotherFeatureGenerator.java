@@ -1,19 +1,3 @@
-/*Copyright 2014, Language Technologies Institute, Carnegie Mellon
-University
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-
-    You may obtain a copy of the License at
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-implied. See the License for the specific language governing
-permissions and limitations under the License.
- @author Wei Zhang
-*/
 package edu.cmu.geolocator.nlp.ner.FeatureExtractor;
 
 import java.io.BufferedReader;
@@ -450,7 +434,7 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 				// Chunk matching <toponym> or <street> <location abbreviation>
 				// or <building/business> or <unnamed location> or <named
 				// natural feature> list word is preceded by <spatial verb>
-				// within 2 words of the phrase
+				// within 5 words of the phrase
 
 				// cross the united states
 				int s = sen.indexOf(np);
@@ -498,6 +482,10 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 							if (spatialVerbsList.contains(preStrings[l - 3]))
 								featval = 1;
 						}
+						if (l - 3 > 0) {
+							if (spatialVerbsList.contains(preStrings[l - 4]))
+								featval = 1;
+						}
 
 					}
 				}
@@ -515,6 +503,10 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 						}
 						if (l - 2 > 0) {
 							if (spatialVerbsList.contains(preStrings[l - 3]))
+								featval = 1;
+						}
+						if (l - 3 > 0) {
+							if (spatialVerbsList.contains(preStrings[l - 4]))
 								featval = 1;
 						}
 
@@ -539,6 +531,10 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 							if (spatialVerbsList.contains(preStrings[l - 3]))
 								featval = 1;
 						}
+						if (l - 3 > 0) {
+							if (spatialVerbsList.contains(preStrings[l - 4]))
+								featval = 1;
+						}
 
 					}
 				}
@@ -552,6 +548,14 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 							featval = 1;
 						if (l - 1 > 0) {
 							if (spatialVerbsList.contains(preStrings[l - 2]))
+								featval = 1;
+						}
+						if (l - 2 > 0) {
+							if (spatialVerbsList.contains(preStrings[l - 3]))
+								featval = 1;
+						}
+						if (l - 3 > 0) {
+							if (spatialVerbsList.contains(preStrings[l - 4]))
 								featval = 1;
 						}
 
@@ -576,6 +580,10 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 							if (spatialPrepsList.contains(preStrings[l - 2]))
 								featval = 1;
 						}
+						if (l - 2 > 0) {
+							if (spatialPrepsList.contains(preStrings[l - 3]))
+								featval = 1;
+						}
 					}
 				}
 
@@ -591,7 +599,10 @@ public class AnotherFeatureGenerator extends FeatureGenerator {
 							if (spatialPrepsList.contains(preStrings[l - 2]))
 								featval = 1;
 						}
-
+						if (l - 2 > 0) {
+							if (spatialPrepsList.contains(preStrings[l - 3]))
+								featval = 1;
+						}
 					}
 				}
 				addFeature(f, "0_lword_toponym_spatialprep_" + featval);

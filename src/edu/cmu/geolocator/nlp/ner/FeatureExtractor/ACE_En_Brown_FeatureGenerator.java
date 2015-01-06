@@ -1,35 +1,8 @@
-/**
- * 
- * Copyright (c) 2012 - 2014 Carnegie Mellon University
- * 
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
- * 
- * @author Wei Zhang,  Language Technology Institute, School of Computer Science, Carnegie-Mellon University.
- * email: wei.zhang@cs.cmu.edu
- *
- * 
- */
 package edu.cmu.geolocator.nlp.ner.FeatureExtractor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -42,6 +15,7 @@ import edu.cmu.geolocator.model.Document;
 import edu.cmu.geolocator.model.Sentence;
 import edu.cmu.geolocator.model.Token;
 import edu.cmu.geolocator.nlp.Lemmatizer;
+import edu.cmu.geolocator.nlp.NLPFactory;
 import edu.cmu.geolocator.nlp.POSTagger;
 import edu.cmu.geolocator.nlp.tokenizer.EuroLangTwokenizer;
 import edu.cmu.geolocator.parser.utils.ParserUtils;
@@ -54,7 +28,8 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.process.WordShapeClassifier;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class ACE_En_FeatureGenerator {
+public class ACE_En_Brown_FeatureGenerator {
+
 
 	private static final int WORDSHAPECHRIS1 = 1;
 	  Lemmatizer lemmatizer;
@@ -65,13 +40,13 @@ public class ACE_En_FeatureGenerator {
 	  
 	  static HashMap<String, String> clusters;
 
-	public ACE_En_FeatureGenerator() {
+	public ACE_En_Brown_FeatureGenerator() {
 	};
 
 	HashSet<String> preposition;
 
 	@SuppressWarnings("unchecked")
-	public ACE_En_FeatureGenerator(String resourcepath) {
+	public ACE_En_Brown_FeatureGenerator(String resourcepath) {
 
 		try {
 			Dictionary prepdict = Dictionary.getSetFromListFile(resourcepath + "en/prepositions.txt", true, true);
@@ -80,6 +55,10 @@ public class ACE_En_FeatureGenerator {
 
 			e.printStackTrace();
 		}
+		
+	      lemmatizer = NLPFactory.getEnUWStemmer();
+
+		
 		 tagger = new MaxentTagger(
                 "models/english-left3words-distsim.tagger");
 		 
@@ -96,7 +75,7 @@ public class ACE_En_FeatureGenerator {
 
 		Document d = null;
 
-		ACE_En_FeatureGenerator fgen = new ACE_En_FeatureGenerator("res/");
+		ACE_En_Brown_FeatureGenerator fgen = new ACE_En_Brown_FeatureGenerator("res/");
 
 		for (Sentence sent : d.getP().get(0).getSentences()) {
 			List<ArrayList<Feature>> tweetfeatures = fgen.extractFeature(sent);
@@ -144,6 +123,8 @@ public class ACE_En_FeatureGenerator {
 
 	    // pos tagging, originally postags. input is t_tweet
 	    // stored in pos field
+		
+
 
 		Reader r = new StringReader(sent.getSentenceString());
 		List<List<HasWord>> POSsentences = MaxentTagger.tokenizeText(r);
@@ -188,7 +169,7 @@ public class ACE_En_FeatureGenerator {
 			
 			genWordShapeFeatures(f, originalTokens, i);
 			
-			//genBrownClusterFeatures(f, originalTokens, i);
+			genBrownClusterFeatures(f, originalTokens, i);
 
 			// ////////////////////////////////// GAZ AND DICT LOOK UP
 			// genGazFeatures(f, sent, i);
@@ -843,5 +824,7 @@ public class ACE_En_FeatureGenerator {
 	public void setPreposition(HashSet<String> preposition) {
 		this.preposition = preposition;
 	}
+
+
 
 }

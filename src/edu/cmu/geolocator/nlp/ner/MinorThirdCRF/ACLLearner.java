@@ -37,6 +37,7 @@ import edu.cmu.geolocator.io.ACEImporter;
 import edu.cmu.geolocator.io.GetReader;
 import edu.cmu.geolocator.model.Document;
 import edu.cmu.geolocator.model.Sentence;
+import edu.cmu.geolocator.nlp.ner.FeatureExtractor.ACE_En_Brown_FeatureGenerator;
 import edu.cmu.geolocator.nlp.ner.FeatureExtractor.ACE_En_FeatureGenerator;
 import edu.cmu.minorthird.classify.ClassLabel;
 import edu.cmu.minorthird.classify.Example;
@@ -55,28 +56,31 @@ public class ACLLearner {
 		String learner = "crf";
 
 		ACEImporter importer = new ACEImporter(
-				"E:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\train");
+				"C:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\train");
 		
 		
 		HashMap<String, Document> docs = importer.getsDocs();
 
-		ACE_En_FeatureGenerator fgen = new ACE_En_FeatureGenerator("res/");
+		ACE_En_Brown_FeatureGenerator fgen = new ACE_En_Brown_FeatureGenerator("res/");
 
 		int iter = 120;
 
 		SequenceDataset dataset = new SequenceDataset();
 
 		for (Document d : docs.values()) {
+			//System.out.println(d.getDid());
 			int sentid = 0;
 			for (Sentence sent : d.getP().get(0).getSentences()) {
+			
 
 				List<ArrayList<Feature>> tweetfeatures = fgen.extractFeature(sent);
 				for (int tokid = 0; tokid < sent.getTokens().length; tokid++) {
 					ClassLabel lab = new ClassLabel(sent.getTokens()[tokid].getNE()==null?"O":sent.getTokens()[tokid].getNE());
 					MutableInstance inst = new MutableInstance("ACE-NER", d.getDid() + sentid + "-" + tokid);
-					for (int j = 0; j < tweetfeatures.get(0).size(); j++)
+					for (int j = 0; j < tweetfeatures.get(tokid).size(); j++)
 						inst.addBinary(tweetfeatures.get(tokid).get(j));
 					dataset.add(new Example(inst, lab));
+					
 				}
 				sentid++;
 			}
@@ -87,7 +91,7 @@ public class ACLLearner {
 			CRFLearner CRF = new CRFLearner();
 			CRF.setMaxIters(iter);
 			CMM model = (CMM) CRF.batchTrain(dataset);
-			IOUtil.saveSerialized(model, new File("ACE-CRF.model"+iter));
+			IOUtil.saveSerialized(model, new File("201500105ACEBrown-CRF.model"+iter));
 
 		} else if (learner.equals("cpl")) {
 			CollinsPerceptronLearner cpl = new CollinsPerceptronLearner(3, iter);

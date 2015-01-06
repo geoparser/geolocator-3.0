@@ -53,18 +53,20 @@ public class ACLTester {
 
 		CMM model = null;
 
-		String name = "ACE-CRF.model120";
+		String name = "20141119ACEBrown-CRF.model120";
 		if (learningalgo.equals("crf"))
 			model = (CMM) IOUtil.loadSerialized(new java.io.File(name));
 		if (learningalgo.equals("cpl"))
-			model = (CMM) IOUtil.loadSerialized(new java.io.File("ACE-CPL.model"));
+			model = (CMM) IOUtil.loadSerialized(new java.io.File(
+					"ACE-CPL.model"));
 
 		System.out.println("Model loaded. Tagging test set and Evaluate:");
 
 		// put your own docs here.
-		ACEImporter importer = new ACEImporter(
-				"E:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\test");
-
+		//ACEImporter importer = new ACEImporter(
+				//"C:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\test");
+		
+		ACEImporter importer = new ACEImporter("C:\\chenxu\\cmu\\IEEE paper data\\parallel data\\LDC Data\\ACE 2005 Multilingual LDC2005E18\\ACE2005-TrainingData-V6.0\\English\\test");
 		System.out.println("Start testing");
 		HashMap<String, Document> testdocs = importer.getsDocs();
 
@@ -75,11 +77,14 @@ public class ACLTester {
 			int sentid = 0;
 			for (Sentence sent : d.getP().get(0).getSentences()) {
 				Example[] exp = new Example[sent.getTokens().length];
-				List<ArrayList<Feature>> tweetfeatures = fgen.extractFeature(sent);
+				List<ArrayList<Feature>> tweetfeatures = fgen
+						.extractFeature(sent);
 				for (int tokid = 0; tokid < sent.getTokens().length; tokid++) {
-					ClassLabel lab = new ClassLabel(sent.getTokens()[tokid].getNE() == null ? ""
-							: sent.getTokens()[tokid].getNE());
-					MutableInstance inst = new MutableInstance("ACE-NER", d.getDid() + sentid + "-" + tokid);
+					ClassLabel lab = new ClassLabel(
+							sent.getTokens()[tokid].getNE() == null ? ""
+									: sent.getTokens()[tokid].getNE());
+					MutableInstance inst = new MutableInstance("ACE-NER",
+							d.getDid() + sentid + "-" + tokid);
 					for (int j = 0; j < tweetfeatures.get(0).size(); j++) {
 						inst.addBinary(tweetfeatures.get(tokid).get(j));
 					}
@@ -87,7 +92,8 @@ public class ACLTester {
 				}
 				ClassLabel[] labels = model.classification(exp);
 				for (int tokid = 0; tokid < sent.getTokens().length; tokid++) {
-					sent.getTokens()[tokid].setNEprediction(labels[tokid].bestClassName());
+					sent.getTokens()[tokid].setNEprediction(labels[tokid]
+							.bestClassName());
 				}
 				sentid++;
 			}
@@ -98,28 +104,50 @@ public class ACLTester {
 	}
 
 	private static void printStat(ArrayList<Document> testdocs) {
+		StringBuffer prediction = new StringBuffer();
+		StringBuffer Gold = new StringBuffer();
+		StringBuffer result = new StringBuffer();
 		int gold = 0, totalpred = 0, correct = 0;
 		for (Document d : testdocs) {
 			for (Sentence sent : d.getP().get(0).getSentences()) {
 				for (Token t : sent.getTokens()) {
-					if (t.getNEprediction().equals("O") == false)
-						if((t.getNEprediction().equals("TYPE=\"GPE\"")||t.getNEprediction().equals("TYPE=\"LOC\"")))
-						totalpred++;
-					if (t.getNE() != null)
-						if (t.getNE().equals("TYPE=\"GPE\"")||t.getNE().equals("TYPE=\"LOC\"")){
-						gold++;
-					if (t.getNE().equals(t.getNEprediction()))
-						correct++;
-						//System.out.println(t.getNE());
+					if (t.getNEprediction().equals("O") == false) 
+						if ((t.getNEprediction().equals("TYPE=\"GPE\"") || t
+								.getNEprediction().equals("TYPE=\"LOC\""))) {
+							totalpred++;
+							prediction.append("prediction: " + t.getToken()+"\n");
 						}
+							if (t.getNE() != null) {
+								if (t.getNE().equals("TYPE=\"GPE\"")
+										|| t.getNE().equals("TYPE=\"LOC\"")) {
+									gold++;
+									Gold.append("Gold: " + t.getToken()+"\n");
+
+									if (t.getNE().equals(t.getNEprediction())) {
+										result.append("Result: "
+												+ t.getToken()+" " + t.getNE()
+												+ t.getNEprediction()+"\n");
+										correct++;
+									}
+								}
+								// System.out.println(t.getNE());
+							}
+
+					}
 				}
-			}
 		}
+		System.out.println(prediction.toString());
+		System.out.println(Gold.toString());
+		System.out.println(result.toString());
+
+		
 		double p = (double) correct / (double) totalpred;
 		double r = (double) correct / (double) gold;
 		double f1 = 2 * p * r / (p + r);
-		System.out.println("Precision:" + p);
-		System.out.println("Recall" + r);
+		System.out.println(totalpred + "  " + gold + "  " + correct);
+		System.out.println("Precision: " + p);
+		System.out.println("Recall " + r);
 		System.out.println(f1);
+
 	}
 }

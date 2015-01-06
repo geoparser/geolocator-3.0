@@ -1,3 +1,5 @@
+package edu.cmu.geolocator.nlp.ner.FeatureExtractor;
+
 /**
  * 
  * Copyright (c) 2012 - 2014 Carnegie Mellon University
@@ -19,15 +21,12 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
  * 
- * @author Wei Zhang,  Language Technology Institute, School of Computer Science, Carnegie-Mellon University.
- * email: wei.zhang@cs.cmu.edu
+ * @author Xu Chen,  Language Technology Institute, School of Computer Science, Carnegie-Mellon University.
+ * email: xuchen@gmail.com
  *
  * 
  */
-package edu.cmu.geolocator.nlp.ner.FeatureExtractor;
-
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -54,7 +53,7 @@ import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.process.WordShapeClassifier;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
-public class ACE_En_FeatureGenerator {
+public class SkipChainFeature {
 
 	private static final int WORDSHAPECHRIS1 = 1;
 	  Lemmatizer lemmatizer;
@@ -62,16 +61,14 @@ public class ACE_En_FeatureGenerator {
 	  POSTagger postagger;
 	  
 	  MaxentTagger tagger;
-	  
-	  static HashMap<String, String> clusters;
 
-	public ACE_En_FeatureGenerator() {
+	public SkipChainFeature() {
 	};
 
 	HashSet<String> preposition;
 
 	@SuppressWarnings("unchecked")
-	public ACE_En_FeatureGenerator(String resourcepath) {
+	public SkipChainFeature(String resourcepath) {
 
 		try {
 			Dictionary prepdict = Dictionary.getSetFromListFile(resourcepath + "en/prepositions.txt", true, true);
@@ -82,14 +79,6 @@ public class ACE_En_FeatureGenerator {
 		}
 		 tagger = new MaxentTagger(
                 "models/english-left3words-distsim.tagger");
-		 
-			if (clusters == null)
-				try {
-					ReadBrownCluster("res/brownclusters/brown-rcv1.clean.tokenized-CoNLL03.txt-c3200-freq1.txt");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 	}
 
 	public static void main(String argv[]) throws IOException, InterruptedException {
@@ -101,23 +90,6 @@ public class ACE_En_FeatureGenerator {
 		for (Sentence sent : d.getP().get(0).getSentences()) {
 			List<ArrayList<Feature>> tweetfeatures = fgen.extractFeature(sent);
 		}
-
-	}
-	
-	public static void ReadBrownCluster(String filename) throws IOException {
-
-		clusters = new HashMap<String, String>();
-		String cluster = "", line = "", word = "";
-		int check = 0;
-		BufferedReader bw = new BufferedReader(new FileReader(filename));
-		while ((line = bw.readLine()) != null) {
-			word = line.split("\t")[1];
-			cluster = line.split("\t")[0];
-			// System.out.println("brownbrownw"+word+cluster);
-			clusters.put(word, cluster);
-		}
-
-		System.out.println("BC DONE");
 
 	}
 
@@ -187,9 +159,6 @@ public class ACE_En_FeatureGenerator {
 			//genTagFeatures(f, originalTokens, i);
 			
 			genWordShapeFeatures(f, originalTokens, i);
-			
-			//genBrownClusterFeatures(f, originalTokens, i);
-
 			// ////////////////////////////////// GAZ AND DICT LOOK UP
 			// genGazFeatures(f, sent, i);
 			// f7: STREET SUFFIX
@@ -393,115 +362,6 @@ public class ACE_En_FeatureGenerator {
 		}
 	}
 	
-	
-	private static void genBrownClusterFeatures(List<Feature> f,
-			Token[] tokens, int i) throws IOException {
-
-		if (clusters.containsKey((tokens[i].getToken()))
-				&& clusters.get((tokens[i].getToken())) != null) {
-			// System.out.println(clusters.get(TOKLW(t_data[i])));
-			if (clusters.get(tokens[i].getToken()).length() <= 8&&clusters.get(tokens[i].getToken()).length() > 0) {
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken())));
-
-				if (i - 1 > 0) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i - 1]
-											.getToken())));
-					// addFeature(f, tokens[i].getNE() +
-					// clusters.get(TOKLW(tokens[i-1].getToken())).substring(0,12)+"@-1");
-				}
-				if (i + 1 < tokens.length) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i + 1]
-											.getToken())));
-					// addFeature(f, tokens[i].getNE() +
-					// clusters.get(TOKLW(tokens[i+1].getToken())).substring(0,12)+"@1");
-				}
-			} else if (clusters.get(tokens[i].getToken()).length() <= 12
-					&& clusters.get(tokens[i].getToken()).length() > 8) {
-
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken()))
-										.substring(0, 8));
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken())));
-
-				if (i - 1 > 0) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i - 1]
-											.getToken())));
-				}
-				if (i + 1 < tokens.length) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i + 1]
-											.getToken())));
-					// addFeature(f, tokens[i].getNE() +
-					// clusters.get(TOKLW(tokens[i+1].getToken())).substring(0,12)+"@1");
-				}
-
-			}else if (clusters.get(tokens[i].getToken()).length() > 12){
-				
-
-
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken()))
-										.substring(0, 8));
-				
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken()))
-										.substring(0, 12));
-				addFeature(
-						f,
-						tokens[i].getPOS()+"_"
-								+ clusters.get((tokens[i].getToken())));
-
-				if (i - 1 > 0) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i - 1]
-											.getToken())));
-				}
-				if (i + 1 < tokens.length) {
-					addFeature(
-							f,
-							tokens[i].getPOS()+"_"
-									+ clusters.get((tokens[i + 1]
-											.getToken())));
-					// addFeature(f, tokens[i].getNE() +
-					// clusters.get(TOKLW(tokens[i+1].getToken())).substring(0,12)+"@1");
-				}
-
-			
-				
-			}
-
-		}
-
-		else
-			addFeature(f, "BrownCluster_-1");
-
-	}
-	
 	/**
 	 * CAPITALIZATION SEQUENCE POINT CAPs OF SURROUNDING WORDS CAP SEQUENCEs
 	 * 
@@ -573,6 +433,9 @@ public class ACE_En_FeatureGenerator {
 	private static void genTokenFeatures(List<Feature> f, Sentence sent, int i) {
 		// String[] lemmat_tweet;
 		// CURRENT TOKEN
+		addFeature(f, sent.getTokens()[i].getNE() + " ---- " + "0_tok_lw_"
+				+ TOKLW(sent.getTokens()[i].getLemma().trim()));
+		
 		addFeature(f, "0_tok_lw_" + TOKLW(sent.getTokens()[i].getLemma()));
 		if (i - 4 >= 0) {
 			// addFeature(f, "-_tok_lw_" + TOKLW(lemmat_tweet[i - 4]));
