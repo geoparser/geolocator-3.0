@@ -6,6 +6,7 @@ Functionality (geoparsing): Finds toponyms, street and building and business nam
 
 Functionality (geocoding): Attaches latitude and longitude to topnyms (whether mined from documents or tweets).  Does not assign latitude and longitude to streets or buildings. 
 
+The machine learning based NER for locations uses Conditional Random Fields, or Average Perceptron algorithms, and there are two rule based models in addition to that. So, if you would re-train the geolocator, we would suggest training directly with conditional random fields that you are familiar with, instead of understanding the geolocator package to get the model trained. For using the additional rule based algorithms, you could apply that along with the model you trained (English rule based parsers only, and for buildings and streets only). 
 
 /////////////// Introduction ///////////////
 
